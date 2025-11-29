@@ -1,4 +1,10 @@
 {
+  "name": "studify-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.81.1",
     "bcrypt": "^6.0.0",
