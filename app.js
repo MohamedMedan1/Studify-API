@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require('morgan');
+const cors = require('cors');
 const dotenv = require("dotenv");
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -25,12 +26,15 @@ app.use(express.static('public'));
 
 app.use(morgan("dev"));
 
+// Enable frontend to call api
+app.use(cors());
+
 app.set('trust proxy', 1);
 
 // Rate limiting to prevent Brute Force or DOS/DDOS Attack
 const limiter = rateLimit({
-  limit: 50,
-  windowMs: (60 * 60 * 1000)
+  limit: 200,
+  windowMs: (15 * 60 * 1000)
 });
 
 app.use(limiter);
