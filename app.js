@@ -25,6 +25,8 @@ app.use(express.static('public'));
 
 app.use(morgan("dev"));
 
+app.set('trust proxy', 1);
+
 // Rate limiting to prevent Brute Force or DOS/DDOS Attack
 const limiter = rateLimit({
   limit: 50,

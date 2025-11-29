@@ -12,8 +12,8 @@ mongoose
   .catch((err) => console.error("Database connection error:", err));
 
 // Run Server on PORT:5000
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5001;
+const server = app.listen(PORT, () => {
   console.log("Server is running on 5000 port");
 });
 
