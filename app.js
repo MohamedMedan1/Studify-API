@@ -27,7 +27,11 @@ app.use(express.static('public'));
 app.use(morgan("dev"));
 
 // Enable frontend to call api
-app.use(cors());
+const FRONTEND_URL = process.env.FRONTEND_URL;
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
 
 app.set('trust proxy', 1);
 
