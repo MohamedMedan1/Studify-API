@@ -11,13 +11,12 @@ const generateJWTAndSendResponse = (user, res) => {
     expiresIn: "90d",
   });
 
-  if (process.env.NODE_ENV === "production") {
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none", 
-    });
-  }
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", 
+    sameSite: "none",
+  });
+
 
   res.status(200).json({
     status: "success",
