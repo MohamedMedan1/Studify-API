@@ -15,6 +15,7 @@ const generateJWTAndSendResponse = (user, res) => {
     res.cookie("jwt", token, {
       httpOnly: true,
       secure: true,
+      sameSite: "none", 
     });
   }
 
