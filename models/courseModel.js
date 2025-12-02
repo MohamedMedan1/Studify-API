@@ -49,7 +49,7 @@ courseSchema.post('save', async function (doc, next) {
 });
 
 courseSchema.pre(/^find/, function (next) {
-  this.populate({ path: "level",select:'name number' });
+  this.populate({ path: "level",select:'name number createdAt difficulty' });
   next();
 });
 

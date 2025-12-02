@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require('morgan');
+const cookieParser = require("cookie-parser");
 const cors = require('cors');
 const dotenv = require("dotenv");
 const rateLimit = require('express-rate-limit');
@@ -13,6 +14,8 @@ const instructorRouter = require("./routes/instructorRoutes");
 const courseRouter = require("./routes/courseRoutes");
 const levelRouter = require("./routes/levelRoutes");
 const adminRouter = require("./routes/adminRoutes");
+const enrollmentGlobalRouter = require("./routes/enrollmentGlobalRoutes");
+const gradeGlobalRouter = require("./routes/gradeGlobalRoutes");
 
 const globalErrorHandler = require('./controllers/errorController')
 const AppError = require('./utils/appError');
@@ -49,6 +52,9 @@ app.use(helmet());
 // Body Parser Middleware and limit the body size
 app.use(express.json({ limit: "10kb" }));
 
+// Cookie parser middleware to receive tokens from front
+app.use(cookieParser());
+
 // Preventing Cross Site Scripting Attacks
 app.use(xss());
 
@@ -65,6 +71,8 @@ app.use("/api/v1/students", studentRouter);
 app.use("/api/v1/instructors", instructorRouter);
 app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/levels", levelRouter);
+app.use("/api/v1/enrollments", enrollmentGlobalRouter);
+app.use("/api/v1/grades", gradeGlobalRouter);
 
 // Admin Routes
 app.use("/api/v1/admins", adminRouter);

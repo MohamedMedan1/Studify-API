@@ -1,6 +1,5 @@
 const express = require("express");
 const {
-  createNewGrade,
   getAllStudentGrades,
   getStudentGradeByCourseID,
   getStudentGradeByGradeID,
@@ -13,18 +12,14 @@ const router = express.Router({ mergeParams: true });
 
 // Check if user logged in ot not (Authentication)
 router.use(protect);
+// Check id user authorized to perfrom this action or not
+router.use(restrictTo("student"))
 
 router.route("/getGradeByCourseId/:courseId").get(getStudentGradeByCourseID);
 
-// Check id user authorized to perfrom this action or not
-router.use(restrictTo("instructor","admin","super admin"))
-
 router.route("/")
   .get(getAllStudentGrades)
-  .post(isEnrolledCourse, createNewGrade);
-
-router.route("/:id")
-  .get(getStudentGradeByGradeID)
-  .patch(updateGrade);
+router.route("/:gradeId")
+  .get(getStudentGradeByGradeID);
 
 module.exports = router;

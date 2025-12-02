@@ -16,7 +16,7 @@ const router = express.Router({ mergeParams: true });
 router.use(protect);
 
 // Check if user authorized to perform this action or not
-router.use(restrictTo("student","admin","super admin"));
+router.use(restrictTo("student"));
 
 router.route("/")
   .get(getAllEnrollments)
@@ -26,10 +26,4 @@ router.route("/:enrollId")
   .get(getEnrollment)
   .delete(checkIfStdCompleteTheCourse,deleteEnrollment);
 
-// Check if user authorized to perform this action or not
-router.use(restrictTo("admin","super admin"));
-
-router.route("/:enrollId")
-  .patch(updateEnrollment);
-  
 module.exports = router;

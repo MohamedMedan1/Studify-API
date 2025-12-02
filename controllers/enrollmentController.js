@@ -80,8 +80,9 @@ exports.getAllStudentsEnrollments = getAll(
 );
 
 exports.getAllEnrollments = catchAsync(async (req, res, next) => {
-  const { studentId } = req.params;
-  const enrollments = await Enrollment.find({ student: studentId })
+  const filter = req.params.studentId ? { student: req.params.studentId } : {};
+
+  const enrollments = await Enrollment.find(filter)
     .populate({ path: "student", select: "name email" })
     .populate({ path: "course", select: "name level" });
 
@@ -105,45 +106,21 @@ exports.createNewEnrollment = catchAsync(async (req, res, next) => {
 
 exports.getEnrollment = catchAsync(async (req, res, next) => {
   const { studentId, enrollId } = req.params;
-  const enrollment = await Enrollment.findOne({
-    student: studentId || req.user._id,
-    _id: enrollId,
-  });
 
+  const filter = { _id: enrollId };
+  if (studentId) filter.student = studentId;
+
+  const enrollment = await Enrollment.findOne(filter)
+    .populate({ path: "student", select: "name email" })
+    .populate({ path: "course", select: "name level" })
+    .populate({ path: "instructor", select: "name" });
+  
   if (!enrollment) {
-    return next(
-      new AppError(
-        `Student: ${studentId} didn't have enrollment with that Id: ${enrollId} `,
-        404
-      )
-    );
-  }
+    const msg = studentId
+      ? `Student: ${studentId} doesn't have enrollment with ID: ${enrollId}`
+      : `No enrollment found with ID: ${enrollId}`;
 
-  res.status(200).json({
-    status: "success",
-    data: enrollment,
-  });
-});
-
-exports.updateEnrollment = catchAsync(async (req, res, next) => {
-  const { studentId, enrollId } = req.params;
-
-  const enrollment = await Enrollment.findOneAndUpdate(
-    { _id: enrollId, student: studentId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
-
-  if (!enrollment) {
-    return next(
-      new AppError(
-        `Student: ${studentId} didn't have enrollment with that Id: ${enrollId} `,
-        404
-      )
-    );
+    return next(new AppError(msg, 404));
   }
 
   res.status(200).json({
@@ -155,18 +132,16 @@ exports.updateEnrollment = catchAsync(async (req, res, next) => {
 exports.deleteEnrollment = catchAsync(async (req, res, next) => {
   const { studentId, enrollId } = req.params;
 
-  const deleted = await Enrollment.findOneAndDelete({
-    _id: enrollId,
-    student: studentId,
-  });
+  const filter = { _id: enrollId };
+  if (studentId) filter.student = studentId;
+
+  const deleted = await Enrollment.findOneAndDelete(filter);
 
   if (!deleted) {
-    return next(
-      new AppError(
-        `Student ${studentId} doesn't have enrollment with id ${enrollId}`,
-        404
-      )
-    );
+    const msg = studentId
+      ? `Student: ${studentId} doesn't have enrollment with ID: ${enrollId}`
+      : `No enrollment found with ID: ${enrollId}`;
+    return next(new AppError(msg, 404));
   }
 
   res.status(204).json({

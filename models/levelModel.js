@@ -26,7 +26,11 @@ const levelSchema = new mongoose.Schema({
       type: mongoose.Schema.ObjectId,
       ref:'Course'
     }
-  ]
+  ],
+  createdAt: {
+    type: Date,
+    default:Date.now
+  }
 });
 
 const Level = mongoose.model('Level', levelSchema);

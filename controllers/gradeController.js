@@ -2,7 +2,7 @@ const Grade = require("../models/gradeModel");
 const Enrollment = require("../models/enrollmentModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
-const { updateOne, deleteOne } = require("./handlerFactory");
+const filterFields = require("../utils/filterFields");
 
 // Check if student enrolled this course before create grade on it
 exports.isEnrolledCourse = async (req, res, next) => {
@@ -19,9 +19,8 @@ exports.isEnrolledCourse = async (req, res, next) => {
 }
 
 exports.getAllStudentGrades = catchAsync(async (req, res, next) => {
-  const studentId = req.params.studentId || req.user._id;
-
-  const grades = await Grade.find({ student: studentId });
+  const filter = req.params.studentId ? { student: req.params.studentId } : {}; 
+  const grades = await Grade.find(filter);
   
   res.status(200).json({
     status: 'success',
@@ -30,7 +29,7 @@ exports.getAllStudentGrades = catchAsync(async (req, res, next) => {
 });
 
 exports.createNewGrade = catchAsync(async (req, res, next) => {
-  const studentId = req.params.studentId || req.user._id;
+  const studentId = req.params.studentId;
 
   const newGrade = await Grade.create({ ...req.body,student:studentId });
 
@@ -57,13 +56,18 @@ exports.getStudentGradeByCourseID = catchAsync(async (req, res, next) => {
 });
 
 exports.getStudentGradeByGradeID =  catchAsync(async (req, res, next) => {
-  const studentId = req.params.studentId || req.user._id;
-  const gradeId = req.params.id;
+  const { studentId, gradeId } = req.params;
+  const filter = { _id: gradeId };
+  if (studentId) filter.student = studentId;
   
-  const grade = await Grade.findOne({ student: studentId, _id: gradeId });
+  const grade = await Grade.findOne(filter);
 
   if (!grade) {
-    return next(new AppError(`There is no grade for student: ${studentId} with that grade Id: ${gradeId}`, 404));
+    const message = studentId
+      ? `There is no grade for student: ${studentId} with grade Id: ${gradeId}`
+      : `No grade found with grade Id: ${gradeId}`;
+
+    return next(new AppError(message, 404));
   }
 
   res.status(200).json({
@@ -72,4 +76,39 @@ exports.getStudentGradeByGradeID =  catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateGrade = updateOne(Grade);
+exports.updateGrade = catchAsync(async (req, res, next) => {
+  const { gradeId } = req.params;
+
+  const filteredBody = filterFields(req.body, "degree", "grade", "status");
+
+  const updatedGrade = await Grade.findByIdAndUpdate(gradeId, filteredBody, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!updatedGrade) {
+    return next(new AppError("There is no grade with that Id", 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedGrade
+  });
+});
+
+exports.deleteGrade  = catchAsync(async (req, res, next) => {
+  const { gradeId } = req.params;
+
+  const deleted = await Grade.findByIdAndDelete(gradeId);
+  
+  if (!deleted) {
+    return next(new AppError("There is no grade with that Id", 404));
+  }
+
+  res.status(204).json({
+    status: 'success',
+    message:"Grade Deleted Successfully!"
+  });
+});
+
+
